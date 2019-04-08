@@ -1,9 +1,15 @@
+#base image
 FROM ubuntu:14.04
 
+
+#add environment path 
 ENV PATH /opt/conda/bin:$PATH
 ENV PATH /root/.local/bin:$PATH
+ENV PATH /opt/lncpro/:$PATH
+ENV PATH /opt/RIblast:$PATH
 
 
+#install linux libraries
 RUN apt-get update && apt-get install -y \
 wget \
 unzip \
@@ -22,16 +28,15 @@ automake \
 libboost-all-dev \
 pkg-config \
 software-properties-common \ 
-cmake
+cmake \ 
+curl \ 
+grep \ 
+sed \ 
+dpkg
 
 
-RUN apt-add-repository -y ppa:j-4/vienna-rna && \
-apt-get update && \
-apt-get install -y viennarna
-
-
-RUN apt-get install -y curl grep sed dpkg && \
-TINI_VERSION=`curl https://github.com/krallin/tini/releases/latest | grep -o "/v.*\"" | sed 's:^..\(.*\).$:\1:'` && \
+#Tini
+RUN TINI_VERSION=`curl https://github.com/krallin/tini/releases/latest | grep -o "/v.*\"" | sed 's:^..\(.*\).$:\1:'` && \
 curl -L "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" > tini.deb && \
 dpkg -i tini.deb && \
 rm tini.deb && \
@@ -46,6 +51,7 @@ rm -rf download && \
 export PERL5LIB=/opt/LncTar
 
 
+#Miniconda
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda2-4.5.12-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh && \
@@ -53,22 +59,15 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda2-4.5.12-Linux-x86
     echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
     echo "conda activate base" >> ~/.bashrc
 
+
+#intarna, viennarna, numpy, scipy, statsmodels and configparser
 RUN conda config --add channels defaults && \
         conda config --add channels bioconda && \
         conda config --add channels conda-forge && \
 	conda update -n base -c defaults conda && \
 	conda install -y intarna
-
-#RUN conda install -y viennarna
-
+RUN conda install -y viennarna
 RUN conda install -y numpy scipy statsmodels configparser
-
-#WORKDIR /opt/
-#RUN git clone https://bitbucket.org/compbio/mechrna.git
-#WORKDIR /opt/mechrna/data/
-#RUN wget https://zenodo.org/record/1115534/files/mechrna.data.grch38.tar.gz && \
-#tar -xvzf mechrna.data.grch38.tar.gz && \
-#rm -rf mechrna.data.grch38.tar.gz
 
 
 #Triplexator
@@ -89,12 +88,9 @@ rm -rf lncpro_pre.zip && \
 mv RNAScore_min lncpro
 WORKDIR /opt/lncpro/
 RUN make
-
 RUN cp /opt/IPMiner/lncPro/predator /opt/lncpro && \ 
 cp /usr/bin/RNAsubopt /opt/lncpro && \ 
 rm -rf /opt/IPMiner
-
-ENV PATH /opt/lncpro/:$PATH
 
 
 #miRanda
@@ -104,21 +100,11 @@ RUN ./configure && \
 make install
 
 
-#RGT
-#RUN pip install --upgrade pip
-#RUN pip install --user cython numpy scipy
-#RUN pip install --user RGT
-#WORKDIR /root/rgtdata
-#RUN python setupGenomicData.py --hg19
-#RUN python setupGenomicData.py --hg38
-
-
 ##RIblast
 WORKDIR /opt/
 RUN git clone https://github.com/fukunagatsu/RIblast.git
 WORKDIR /opt/RIblast/
 RUN make
-ENV PATH /opt/RIblast:$PATH
 
 
 #MechRNA
@@ -130,5 +116,5 @@ tar -xvzf mechrna.data.grch38.tar.gz && \
 rm -rf mechrna.data.grch38.tar.gz
 
 
-WORKDIR /
+WORKDIR /opt/
 CMD [ "/bin/bash" ]
