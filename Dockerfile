@@ -79,20 +79,6 @@ WORKDIR /opt/triplexator/build/Release
 RUN cmake ../.. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ -G "Unix Makefiles" && make
 
 
-#lncpro
-ADD lncpro_pre.zip/ /opt/
-WORKDIR /opt/
-RUN git clone https://github.com/xypan1232/IPMiner.git IPMiner && \
-unzip lncpro_pre.zip && \ 
-rm -rf lncpro_pre.zip && \ 
-mv RNAScore_min lncpro
-WORKDIR /opt/lncpro/
-RUN make
-RUN cp /opt/IPMiner/lncPro/predator /opt/lncpro && \ 
-cp /usr/bin/RNAsubopt /opt/lncpro && \ 
-rm -rf /opt/IPMiner
-
-
 #miRanda
 ADD miRanda-aug2010.tar.gz/ /opt/
 WORKDIR /opt/miRanda-3.3a/
@@ -105,15 +91,6 @@ WORKDIR /opt/
 RUN git clone https://github.com/fukunagatsu/RIblast.git
 WORKDIR /opt/RIblast/
 RUN make
-
-
-#MechRNA
-WORKDIR /opt/
-RUN git clone https://bitbucket.org/compbio/mechrna.git
-WORKDIR /opt/mechrna/data/
-RUN wget https://zenodo.org/record/1115534/files/mechrna.data.grch38.tar.gz && \
-tar -xvzf mechrna.data.grch38.tar.gz && \
-rm -rf mechrna.data.grch38.tar.gz
 
 
 WORKDIR /opt/
