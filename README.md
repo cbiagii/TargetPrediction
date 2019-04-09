@@ -2,7 +2,7 @@
 This repository contains a docker image with some tools that can be used to predict lncRNAs and miRNAs targets.
 
 
-## Softwares available
+## Available Softwares
 In this image we have some predictors installed:
 - [LncTar](http://www.cuilab.cn/lnctar): lncRNA - RNA;
 - [miRanda](http://cbio.mskcc.org/microrna_data/manual.html): miRNA - RNA;
